@@ -7,6 +7,7 @@ interface MerchantDashboardProps {
     amount: string; 
     description: string; 
     installments: string;
+    pixServiceFee?: number;
     boleto?: {
       barcode: string;
       cedente: string;
@@ -54,6 +55,9 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
     pix: false,
     boleto: true
   });
+  
+  // Taxa de serviço PIX
+  const [pixServiceFee, setPixServiceFee] = useState(2.99);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;

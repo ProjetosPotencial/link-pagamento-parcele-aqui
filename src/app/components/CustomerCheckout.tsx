@@ -7,6 +7,7 @@ interface PaymentData {
   amount: string;
   description: string;
   installments: string;
+  pixServiceFee?: number;
   boleto?: {
     barcode: string;
     cedente: string;
@@ -37,7 +38,8 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
   const [cardCVV, setCardCVV] = useState('');
   const [cardCPF, setCardCPF] = useState('');
   const [installments, setInstallments] = useState(paymentData?.installments || '12');
-  const [pixServiceFee] = useState(2.99); // Taxa de serviço PIX em %
+  // Taxa de serviço PIX (vem do paymentData ou usa padrão)
+  const pixServiceFeeValue = paymentData?.pixServiceFee || 2.99;
   const [errors, setErrors] = useState<{
     cardNumber?: string;
     cardName?: string;
@@ -91,7 +93,7 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
   const installmentValueWithInterest = (totalWithInterest / parseInt(installments)).toFixed(2);
   
   // Calcular valor com taxa de serviço PIX (sempre à vista)
-  const pixServiceFeeAmount = totalAmount * (pixServiceFee / 100);
+  const pixServiceFeeAmount = totalAmount * (pixServiceFeeValue / 100);
   const pixTotal = totalAmount + pixServiceFeeAmount;
 
   const formatCardNumber = (value: string) => {
@@ -652,7 +654,7 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
                 </div>
                 {cardType === 'pix' && (
                   <div className="flex justify-between">
-                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'var(--fg-muted)' }}>Taxa de Servico PIX ({pixServiceFee}%)</span>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'var(--fg-muted)' }}>Taxa de Servico PIX ({pixServiceFeeValue}%)</span>
                     <span style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 500, color: 'var(--fg)' }}>
                       R$ {formatCurrency(pixServiceFeeAmount)}
                     </span>
@@ -727,7 +729,7 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
               )}
 
               {cardType === 'pix' && (
-                <div className="space-y-4" style={{ border: '3px solid red', padding: 'var(--s-4)', borderRadius: 'var(--r-md)' }}>
+                <div className="space-y-4">
                   <div style={{ backgroundColor: 'var(--bg-muted)', padding: 'var(--s-4)', borderRadius: 'var(--r-md)', textAlign: 'center' }}>
                     <h3 style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '14px', color: '#333333', marginBottom: 'var(--s-3)' }}>
                       📱 Escaneie o QR Code
