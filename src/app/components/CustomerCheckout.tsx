@@ -54,10 +54,17 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
 
   // Taxas de juros por quantidade de parcelas
   const interestRates: { [key: string]: number } = {
-    '1': 0,
-    '2': 0,
-    '3': 0,
-    '6': 2.99,
+    '1': 6.50,
+    '2': 6.67,
+    '3': 5.91,
+    '4': 5.72,
+    '5': 5.55,
+    '6': 5.64,
+    '7': 5.68,
+    '8': 5.60,
+    '9': 5.65,
+    '10': 5.32,
+    '11': 4.88,
     '12': 4.64,
   };
 
@@ -183,6 +190,39 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Left Column - Form */}
             <div className="flex flex-col gap-4 sm:gap-5">
+              {/* Informações da Cobrança */}
+              <div style={{ backgroundColor: 'var(--bg-muted)', padding: 'var(--s-4)', borderRadius: 'var(--r-md)', marginBottom: 'var(--s-3)' }}>
+                <h3 style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '14px', color: '#333333', marginBottom: 'var(--s-3)' }}>
+                  📊 Informações da Cobrança
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--fg-muted)' }}>Descrição:</span>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--fg)', fontWeight: 500 }}>{description}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--fg-muted)' }}>Valor:</span>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--fg)', fontWeight: 600 }}>R$ {formatCurrency(totalAmount)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--fg-muted)' }}>Parcelas:</span>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--fg)', fontWeight: 500 }}>{installments}x</span>
+                  </div>
+                  {billingAddress && (
+                    <div>
+                      <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg-muted)', marginBottom: 'var(--s-1)' }}>Endereço:</p>
+                      <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg)' }}>
+                        {billingAddress.street}, {billingAddress.number}
+                        {billingAddress.complement && ` - ${billingAddress.complement}`}
+                      </p>
+                      <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg)' }}>
+                        {billingAddress.city}, {billingAddress.state} - {billingAddress.zipcode}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Boleto Info - Se disponível */}
               {boletoData && availablePaymentMethods.includes('boleto') && (
                 <div style={{ backgroundColor: 'var(--bg-muted)', padding: 'var(--s-4)', borderRadius: 'var(--r-md)', marginBottom: 'var(--s-3)' }}>
@@ -218,21 +258,7 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
                 </div>
               )}
 
-              {/* Endereço de Fatura - Se disponível */}
-              {billingAddress && (
-                <div style={{ backgroundColor: 'var(--bg-muted)', padding: 'var(--s-4)', borderRadius: 'var(--r-md)', marginBottom: 'var(--s-3)' }}>
-                  <h3 style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '14px', color: '#333333', marginBottom: 'var(--s-2)' }}>
-                    📍 Endereço de Fatura
-                  </h3>
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--fg)' }}>
-                    {billingAddress.street}, {billingAddress.number}
-                    {billingAddress.complement && ` - ${billingAddress.complement}`}
-                  </p>
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--fg)', marginTop: 'var(--s-1)' }}>
-                    {billingAddress.city}, {billingAddress.state} - {billingAddress.zipcode}
-                  </p>
-                </div>
-              )}
+
 
               {/* Métodos de Pagamento */}
               {availablePaymentMethods.length > 1 && (
@@ -519,10 +545,17 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
                       e.target.style.borderWidth = '1px';
                     }}
                   >
-                    <option value="1">À vista - R$ {formatCurrency(totalAmount)}</option>
-                    <option value="2">2x de R$ {formatCurrency(totalAmount / 2)}</option>
-                    <option value="3">3x de R$ {formatCurrency(totalAmount / 3)}</option>
+                    <option value="1">1x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '1') / 1)}</option>
+                    <option value="2">2x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '2') / 2)}</option>
+                    <option value="3">3x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '3') / 3)}</option>
+                    <option value="4">4x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '4') / 4)}</option>
+                    <option value="5">5x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '5') / 5)}</option>
                     <option value="6">6x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '6') / 6)}</option>
+                    <option value="7">7x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '7') / 7)}</option>
+                    <option value="8">8x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '8') / 8)}</option>
+                    <option value="9">9x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '9') / 9)}</option>
+                    <option value="10">10x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '10') / 10)}</option>
+                    <option value="11">11x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '11') / 11)}</option>
                     <option value="12">12x de R$ {formatCurrency(totalWithInterest / 12)}</option>
                   </select>
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -673,37 +706,81 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
               )}
 
               {cardType === 'pix' && (
-                <button
-                  className="w-full flex items-center justify-center transition-all hover:opacity-90 active:scale-[0.98] p-3 sm:p-4 text-[15px] sm:text-[16px]"
-                  style={{
-                    marginTop: 'var(--s-6)',
-                    backgroundColor: 'var(--bg-brand)',
-                    color: 'var(--fg)',
-                    fontFamily: 'var(--font-sans)',
-                    fontWeight: 700,
-                    borderRadius: 'var(--r-md)',
-                    gap: 'var(--s-2)'
-                  }}
-                >
-                  Gerar QR Code PIX
-                </button>
+                <div className="space-y-4">
+                  <div style={{ backgroundColor: 'var(--bg-muted)', padding: 'var(--s-4)', borderRadius: 'var(--r-md)', textAlign: 'center' }}>
+                    <h3 style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '14px', color: '#333333', marginBottom: 'var(--s-3)' }}>
+                      📱 QR Code PIX
+                    </h3>
+                    <div style={{ backgroundColor: 'white', padding: 'var(--s-4)', borderRadius: 'var(--r-md)', marginBottom: 'var(--s-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px' }}>
+                      <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--fg-muted)' }}>QR Code será exibido aqui</p>
+                    </div>
+                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg-muted)', marginBottom: 'var(--s-2)' }}>
+                      Escaneie com seu celular para realizar o pagamento
+                    </p>
+                  </div>
+                  <button
+                    className="w-full flex items-center justify-center transition-all hover:opacity-90 active:scale-[0.98] p-3 sm:p-4 text-[15px] sm:text-[16px]"
+                    style={{
+                      backgroundColor: 'var(--bg-brand)',
+                      color: 'var(--fg)',
+                      fontFamily: 'var(--font-sans)',
+                      fontWeight: 700,
+                      borderRadius: 'var(--r-md)',
+                      gap: 'var(--s-2)'
+                    }}
+                  >
+                    📋 Copiar Link PIX
+                  </button>
+                </div>
               )}
 
               {cardType === 'boleto' && (
-                <button
-                  className="w-full flex items-center justify-center transition-all hover:opacity-90 active:scale-[0.98] p-3 sm:p-4 text-[15px] sm:text-[16px]"
-                  style={{
-                    marginTop: 'var(--s-6)',
-                    backgroundColor: 'var(--bg-brand)',
-                    color: 'var(--fg)',
-                    fontFamily: 'var(--font-sans)',
-                    fontWeight: 700,
-                    borderRadius: 'var(--r-md)',
-                    gap: 'var(--s-2)'
-                  }}
-                >
-                  Gerar Boleto
-                </button>
+                <div className="space-y-4">
+                  <div style={{ backgroundColor: 'var(--bg-muted)', padding: 'var(--s-4)', borderRadius: 'var(--r-md)' }}>
+                    <h3 style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '14px', color: '#333333', marginBottom: 'var(--s-2)' }}>
+                      📋 Dados do Boleto
+                    </h3>
+                    <div className="space-y-2">
+                      <div>
+                        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg-muted)', marginBottom: 'var(--s-1)' }}>
+                          Código de Barras:
+                        </p>
+                        <p style={{ fontFamily: 'monospace', fontSize: '12px', color: 'var(--fg)', fontWeight: 500, wordBreak: 'break-all' }}>
+                          {boletoData?.barcode || 'Não disponível'}
+                        </p>
+                      </div>
+                      <div>
+                        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg-muted)', marginBottom: 'var(--s-1)' }}>
+                          Cedente:
+                        </p>
+                        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg)', fontWeight: 500 }}>
+                          {boletoData?.cedente || 'Não disponível'}
+                        </p>
+                      </div>
+                      <div>
+                        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg-muted)', marginBottom: 'var(--s-1)' }}>
+                          Valor:
+                        </p>
+                        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg)', fontWeight: 600 }}>
+                          R$ {formatCurrency(totalAmount)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    className="w-full flex items-center justify-center transition-all hover:opacity-90 active:scale-[0.98] p-3 sm:p-4 text-[15px] sm:text-[16px]"
+                    style={{
+                      backgroundColor: 'var(--bg-brand)',
+                      color: 'var(--fg)',
+                      fontFamily: 'var(--font-sans)',
+                      fontWeight: 700,
+                      borderRadius: 'var(--r-md)',
+                      gap: 'var(--s-2)'
+                    }}
+                  >
+                    📥 Baixar Boleto
+                  </button>
+                </div>
               )}
 
               {/* Security Badge */}

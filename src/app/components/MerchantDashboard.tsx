@@ -78,10 +78,17 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
 
   // Taxas mensais de juros por quantidade de parcelas (conforme tabela fornecida)
   const interestRates: { [key: string]: number } = {
-    '1': 0,
-    '2': 0,
-    '3': 0,
-    '6': 2.99,
+    '1': 6.50,
+    '2': 6.67,
+    '3': 5.91,
+    '4': 5.72,
+    '5': 5.55,
+    '6': 5.64,
+    '7': 5.68,
+    '8': 5.60,
+    '9': 5.65,
+    '10': 5.32,
+    '11': 4.88,
     '12': 4.64,
   };
 
@@ -575,11 +582,18 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
                     }}
                   >
                   {[
-                    { value: '1', label: 'À vista', rate: '0%' },
-                    { value: '2', label: '2x sem juros', rate: '0%' },
-                    { value: '3', label: '3x sem juros', rate: '0%' },
-                    { value: '6', label: '6x com juros', rate: '2,99%' },
-                    { value: '12', label: '12x com juros', rate: '4,64%' },
+                    { value: '1', label: '1x', rate: '6,50%' },
+                    { value: '2', label: '2x', rate: '6,67%' },
+                    { value: '3', label: '3x', rate: '5,91%' },
+                    { value: '4', label: '4x', rate: '5,72%' },
+                    { value: '5', label: '5x', rate: '5,55%' },
+                    { value: '6', label: '6x', rate: '5,64%' },
+                    { value: '7', label: '7x', rate: '5,68%' },
+                    { value: '8', label: '8x', rate: '5,60%' },
+                    { value: '9', label: '9x', rate: '5,65%' },
+                    { value: '10', label: '10x', rate: '5,32%' },
+                    { value: '11', label: '11x', rate: '4,88%' },
+                    { value: '12', label: '12x', rate: '4,64%' },
                   ].map((option) => {
                     const numAmount = parseFloat(amount.replace(',', '.')) || 0;
                     // Se repassar juros ao cliente, mostrar valor COM juros. Senão, mostrar valor base
