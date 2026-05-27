@@ -59,17 +59,6 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
     '3': 0,
     '6': 2.99,
     '12': 4.64,
-    '18': 4.88,
-    '24': 5.32,
-    '30': 5.65,
-    '36': 5.60,
-    '42': 5.68,
-    '48': 5.64,
-    '54': 5.55,
-    '60': 5.72,
-    '66': 5.91,
-    '72': 6.67,
-    '78': 6.50,
   };
 
   const calculateTotalWithInterest = (baseAmount: number, installmentCount: string): number => {
@@ -535,17 +524,6 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
                     <option value="3">3x de R$ {formatCurrency(totalAmount / 3)}</option>
                     <option value="6">6x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '6') / 6)}</option>
                     <option value="12">12x de R$ {formatCurrency(totalWithInterest / 12)}</option>
-                    <option value="18">18x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '18') / 18)}</option>
-                    <option value="24">24x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '24') / 24)}</option>
-                    <option value="30">30x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '30') / 30)}</option>
-                    <option value="36">36x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '36') / 36)}</option>
-                    <option value="42">42x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '42') / 42)}</option>
-                    <option value="48">48x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '48') / 48)}</option>
-                    <option value="54">54x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '54') / 54)}</option>
-                    <option value="60">60x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '60') / 60)}</option>
-                    <option value="66">66x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '66') / 66)}</option>
-                    <option value="72">72x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '72') / 72)}</option>
-                    <option value="78">78x de R$ {formatCurrency(calculateTotalWithInterest(totalAmount, '78') / 78)}</option>
                   </select>
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">

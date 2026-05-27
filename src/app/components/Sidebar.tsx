@@ -12,12 +12,12 @@ export function Sidebar({ activeMenu = 'home', onNavigate }: SidebarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const menuItems = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'parcelar', label: 'Parcelar Boletos', icon: Barcode },
-    { id: 'veiculares', label: 'Débitos Veiculares', icon: Car },
+    { id: 'home', label: 'Home', icon: Home, disabled: true },
+    { id: 'parcelar', label: 'Parcelar Boletos', icon: Barcode, disabled: true },
+    { id: 'veiculares', label: 'Débitos Veiculares', icon: Car, disabled: true },
     { id: 'link', label: 'Link Pagamento', icon: Link2, badge: 'Novo' },
-    { id: 'historico', label: 'Histórico', icon: Clock },
-    { id: 'config', label: 'Configurações', icon: Settings },
+    { id: 'historico', label: 'Histórico', icon: Clock, disabled: true },
+    { id: 'config', label: 'Configurações', icon: Settings, disabled: true },
   ];
 
   const handleMenuClick = (menuId: string) => {
@@ -77,16 +77,19 @@ export function Sidebar({ activeMenu = 'home', onNavigate }: SidebarProps) {
                 return (
                   <li key={item.id}>
                     <motion.button
-                      whileHover={{ x: 3 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handleMenuClick(item.id)}
+                      whileHover={!item.disabled ? { x: 3 } : {}}
+                      whileTap={!item.disabled ? { scale: 0.98 } : {}}
+                      onClick={() => !item.disabled && handleMenuClick(item.id)}
+                      disabled={item.disabled}
                       className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all relative"
                       style={{
                         backgroundColor: isActive ? 'var(--bg-brand)' : 'transparent',
-                        color: isActive ? '#0A0A0A' : 'var(--fg-muted)',
+                        color: item.disabled ? 'var(--n-300)' : (isActive ? '#0A0A0A' : 'var(--fg-muted)'),
                         fontFamily: 'var(--font-sans)',
                         fontWeight: isActive ? 600 : 500,
                         fontSize: '13px',
+                        opacity: item.disabled ? 0.5 : 1,
+                        cursor: item.disabled ? 'not-allowed' : 'pointer',
                       }}
                     >
                       <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
@@ -165,17 +168,20 @@ export function Sidebar({ activeMenu = 'home', onNavigate }: SidebarProps) {
                   return (
                     <li key={item.id}>
                       <button
-                        onClick={() => handleMenuClick(item.id)}
+                        onClick={() => !item.disabled && handleMenuClick(item.id)}
+                        disabled={item.disabled}
                         className="w-full flex items-center transition-all"
                         style={{
                           gap: 'var(--s-3)',
                           padding: 'var(--s-3) var(--s-3)',
                           backgroundColor: isActive ? 'var(--bg-brand)' : 'transparent',
-                          color: isActive ? '#0A0A0A' : 'var(--fg-muted)',
+                          color: item.disabled ? 'var(--n-300)' : (isActive ? '#0A0A0A' : 'var(--fg-muted)'),
                           fontFamily: 'var(--font-sans)',
                           fontWeight: isActive ? 600 : 500,
                           fontSize: '15px',
                           borderRadius: 'var(--r-md)',
+                          opacity: item.disabled ? 0.5 : 1,
+                          cursor: item.disabled ? 'not-allowed' : 'pointer',
                         }}
                       >
                         <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />

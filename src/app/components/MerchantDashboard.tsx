@@ -83,17 +83,6 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
     '3': 0,
     '6': 2.99,
     '12': 4.64,
-    '18': 4.88,
-    '24': 5.32,
-    '30': 5.65,
-    '36': 5.60,
-    '42': 5.68,
-    '48': 5.64,
-    '54': 5.55,
-    '60': 5.72,
-    '66': 5.91,
-    '72': 6.67,
-    '78': 6.50,
   };
 
   const calculateTotalWithInterest = (baseAmount: string, installmentCount: string): number => {
@@ -292,8 +281,8 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
                     {errors.description}
                   </p>
                 )}
-                <p style={{ marginTop: 'var(--s-2)', fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg-muted)' }}>
-                  💡 Dica: Use este campo para informar ao cliente o motivo do pagamento (ex: "Fatura de Serviços - Maio/2026", "Parcelamento de Débito").
+                <p style={{ marginTop: 'var(--s-2)', fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg-muted)', lineHeight: '1.5' }}>
+                  💡 <strong>Dica:</strong> Use este campo para informar ao cliente o motivo do pagamento (ex: "Fatura de Serviços - Maio/2026", "Parcelamento de Débito").
                 </p>
               </div>
 
@@ -591,17 +580,6 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
                     { value: '3', label: '3x sem juros', rate: '0%' },
                     { value: '6', label: '6x com juros', rate: '2,99%' },
                     { value: '12', label: '12x com juros', rate: '4,64%' },
-                    { value: '18', label: '18x com juros', rate: '4,88%' },
-                    { value: '24', label: '24x com juros', rate: '5,32%' },
-                    { value: '30', label: '30x com juros', rate: '5,65%' },
-                    { value: '36', label: '36x com juros', rate: '5,60%' },
-                    { value: '42', label: '42x com juros', rate: '5,68%' },
-                    { value: '48', label: '48x com juros', rate: '5,64%' },
-                    { value: '54', label: '54x com juros', rate: '5,55%' },
-                    { value: '60', label: '60x com juros', rate: '5,72%' },
-                    { value: '66', label: '66x com juros', rate: '5,91%' },
-                    { value: '72', label: '72x com juros', rate: '6,67%' },
-                    { value: '78', label: '78x com juros', rate: '6,50%' },
                   ].map((option) => {
                     const numAmount = parseFloat(amount.replace(',', '.')) || 0;
                     // Se repassar juros ao cliente, mostrar valor COM juros. Senão, mostrar valor base
@@ -686,7 +664,7 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
               </button>
 
               <p style={{ marginTop: 'var(--s-3)', fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--fg-muted)', textAlign: 'center' }}>
-                Link válido por 24 horas. O cliente poderá parcelar em até 78x.
+                Link válido por 24 horas. O cliente poderá parcelar em até 12x.
               </p>
             </div>
 
