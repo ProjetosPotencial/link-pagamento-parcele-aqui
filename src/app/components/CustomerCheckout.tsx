@@ -36,6 +36,7 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
   const [cardCVV, setCardCVV] = useState('');
   const [cardCPF, setCardCPF] = useState('');
   const [installments, setInstallments] = useState(paymentData?.installments || '12');
+  const [pixServiceFee] = useState(2.99); // Taxa de serviço PIX em %
   const [errors, setErrors] = useState<{
     cardNumber?: string;
     cardName?: string;
@@ -88,6 +89,10 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
   const installmentValue = (totalAmount / parseInt(installments)).toFixed(2);
   const totalWithInterest = calculateTotalWithInterest(totalAmount, installments);
   const installmentValueWithInterest = (totalWithInterest / parseInt(installments)).toFixed(2);
+  
+  // Calcular valor com taxa de serviço PIX (sempre à vista)
+  const pixServiceFeeAmount = totalAmount * (pixServiceFee / 100);
+  const pixTotal = totalAmount + pixServiceFeeAmount;
 
   const formatCardNumber = (value: string) => {
     const cleaned = value.replace(/\s/g, '');
@@ -517,7 +522,8 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
                 </>
               )}
 
-              {/* Parcelas */}
+              {/* Parcelas - Ocultar para PIX */}
+              {cardType !== 'pix' && (
               <div>
                 <label className="block" style={{ fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '14px', color: '#333333', marginBottom: 'var(--s-2)' }}>
                   Parcelas
@@ -568,6 +574,7 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
                   Taxa de {interestRates[installments] || 0}% a.m. (CET incluso)
                 </p>
               </div>
+              )}
             </div>
 
             {/* Right Column - Card Preview & Summary */}
@@ -643,7 +650,15 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
                     R$ {formatCurrency(totalAmount)}
                   </span>
                 </div>
-                {parseInt(installments) > 3 && (
+                {cardType === 'pix' && (
+                  <div className="flex justify-between">
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'var(--fg-muted)' }}>Taxa de Servico PIX ({pixServiceFee}%)</span>
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 500, color: 'var(--fg)' }}>
+                      R$ {formatCurrency(pixServiceFeeAmount)}
+                    </span>
+                  </div>
+                )}
+                {cardType !== 'pix' && parseInt(installments) > 3 && (
                   <div className="flex justify-between">
                     <span style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'var(--fg-muted)' }}>Juros ({interestRates[installments] || 0}% a.m.)</span>
                     <span style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 500, color: 'var(--fg)' }}>
@@ -655,12 +670,18 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
                 <div className="flex justify-between">
                   <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '16px', color: 'var(--fg)' }}>Total</span>
                   <span className="text-[18px] sm:text-[20px]" style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, color: 'var(--fg)' }}>
-                    R$ {formatCurrency(totalWithInterest)}
+                    R$ {formatCurrency(cardType === 'pix' ? pixTotal : totalWithInterest)}
                   </span>
                 </div>
-                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg-muted)', marginTop: 'var(--s-2)' }}>
-                  {parseInt(installments)}x de R$ {formatCurrency(totalWithInterest / parseInt(installments))}
-                </p>
+                {cardType === 'pix' ? (
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg-muted)', marginTop: 'var(--s-2)' }}>
+                    Pagamento a vista
+                  </p>
+                ) : (
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg-muted)', marginTop: 'var(--s-2)' }}>
+                    {parseInt(installments)}x de R$ {formatCurrency(totalWithInterest / parseInt(installments))}
+                  </p>
+                )}
               </div>
 
               {/* CTA Buttons */}
@@ -709,28 +730,46 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
                 <div className="space-y-4">
                   <div style={{ backgroundColor: 'var(--bg-muted)', padding: 'var(--s-4)', borderRadius: 'var(--r-md)', textAlign: 'center' }}>
                     <h3 style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '14px', color: '#333333', marginBottom: 'var(--s-3)' }}>
-                      📱 QR Code PIX
+                      📱 Escaneie o QR Code
                     </h3>
-                    <div style={{ backgroundColor: 'white', padding: 'var(--s-4)', borderRadius: 'var(--r-md)', marginBottom: 'var(--s-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px' }}>
-                      <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--fg-muted)' }}>QR Code será exibido aqui</p>
+                    <div style={{ backgroundColor: 'white', padding: 'var(--s-4)', borderRadius: 'var(--r-md)', marginBottom: 'var(--s-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '220px', border: '2px solid var(--border)' }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ width: '180px', height: '180px', backgroundColor: '#f0f0f0', borderRadius: 'var(--r-md)', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg-muted)' }}>QR Code</p>
+                        </div>
+                      </div>
                     </div>
                     <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg-muted)', marginBottom: 'var(--s-2)' }}>
-                      Escaneie com seu celular para realizar o pagamento
+                      Abra seu app de banco e escaneie para pagar
                     </p>
                   </div>
-                  <button
-                    className="w-full flex items-center justify-center transition-all hover:opacity-90 active:scale-[0.98] p-3 sm:p-4 text-[15px] sm:text-[16px]"
-                    style={{
-                      backgroundColor: 'var(--bg-brand)',
-                      color: 'var(--fg)',
-                      fontFamily: 'var(--font-sans)',
-                      fontWeight: 700,
-                      borderRadius: 'var(--r-md)',
-                      gap: 'var(--s-2)'
-                    }}
-                  >
-                    📋 Copiar Link PIX
-                  </button>
+                  <div style={{ backgroundColor: 'var(--bg-muted)', padding: 'var(--s-4)', borderRadius: 'var(--r-md)' }}>
+                    <h3 style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '14px', color: '#333333', marginBottom: 'var(--s-2)' }}>
+                      📋 Ou copie a chave PIX
+                    </h3>
+                    <div style={{ backgroundColor: 'white', padding: 'var(--s-3)', borderRadius: 'var(--r-md)', marginBottom: 'var(--s-2)', border: '1px solid var(--border)', fontFamily: 'monospace', fontSize: '11px', color: 'var(--fg)', wordBreak: 'break-all', lineHeight: '1.6' }}>
+                      00020126580014br.gov.bcb.pix0136xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+                    </div>
+                    <button
+                      className="w-full flex items-center justify-center transition-all hover:opacity-90 active:scale-[0.98] p-3 text-[14px]"
+                      style={{
+                        backgroundColor: 'var(--bg-brand)',
+                        color: 'var(--fg)',
+                        fontFamily: 'var(--font-sans)',
+                        fontWeight: 700,
+                        borderRadius: 'var(--r-md)',
+                        gap: 'var(--s-2)',
+                        marginBottom: 'var(--s-3)'
+                      }}
+                    >
+                      📋 Copiar Chave PIX
+                    </button>
+                  </div>
+                  <div style={{ backgroundColor: '#f0f9ff', padding: 'var(--s-3)', borderRadius: 'var(--r-md)', border: '1px solid #bfdbfe' }}>
+                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: '#1e40af', lineHeight: '1.5' }}>
+                      ℹ️ <strong>Dica:</strong> Apos realizar o pagamento, voce recebera uma confirmacao instantanea no seu banco.
+                    </p>
+                  </div>
                 </div>
               )}
 
