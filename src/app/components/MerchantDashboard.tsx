@@ -3,7 +3,25 @@ import { Copy, MessageCircle } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 
 interface MerchantDashboardProps {
-  onGenerateLink: (data: { amount: string; description: string; installments: string }) => void;
+  onGenerateLink: (data: { 
+    amount: string; 
+    description: string; 
+    installments: string;
+    boleto?: {
+      barcode: string;
+      cedente: string;
+      valor: string;
+    };
+    billingAddress?: {
+      street: string;
+      number: string;
+      complement?: string;
+      city: string;
+      state: string;
+      zipcode: string;
+    };
+    paymentMethods: string[];
+  }) => void;
   onNavigate?: (menuId: string) => void;
 }
 
@@ -13,9 +31,29 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
   const [installments, setInstallments] = useState('12');
   const [showOverlay, setShowOverlay] = useState(false);
   const [generatedLink, setGeneratedLink] = useState('');
-  const [errors, setErrors] = useState<{ amount?: string; description?: string }>({});
+  const [errors, setErrors] = useState<{ amount?: string; description?: string; boleto?: string; billingAddress?: string }>({});
   const [passFeesToCustomer, setPassFeesToCustomer] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  
+  // Campos de boleto
+  const [boletoBarcode, setBoletoBarcode] = useState('');
+  const [boletoCedente, setBoletoCedente] = useState('');
+  
+  // Campos de endereço de fatura
+  const [billingStreet, setBillingStreet] = useState('');
+  const [billingNumber, setBillingNumber] = useState('');
+  const [billingComplement, setBillingComplement] = useState('');
+  const [billingCity, setBillingCity] = useState('');
+  const [billingState, setBillingState] = useState('');
+  const [billingZipcode, setBillingZipcode] = useState('');
+  
+  // Métodos de pagamento habilitados
+  const [paymentMethods, setPaymentMethods] = useState({
+    credit: true,
+    debit: false,
+    pix: false,
+    boleto: true
+  });
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -38,15 +76,24 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
     }
   };
 
-  // Taxas mensais de juros por quantidade de parcelas
+  // Taxas mensais de juros por quantidade de parcelas (conforme tabela fornecida)
   const interestRates: { [key: string]: number } = {
     '1': 0,
     '2': 0,
     '3': 0,
     '6': 2.99,
     '12': 4.64,
-    '18': 5.82,
-    '24': 6.49,
+    '18': 4.88,
+    '24': 5.32,
+    '30': 5.65,
+    '36': 5.60,
+    '42': 5.68,
+    '48': 5.64,
+    '54': 5.55,
+    '60': 5.72,
+    '66': 5.91,
+    '72': 6.67,
+    '78': 6.50,
   };
 
   const calculateTotalWithInterest = (baseAmount: string, installmentCount: string): number => {
@@ -68,7 +115,7 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
   };
 
   const handleGenerate = () => {
-    const newErrors: { amount?: string; description?: string } = {};
+    const newErrors: { amount?: string; description?: string; boleto?: string; billingAddress?: string } = {};
 
     if (!amount || amount === '0,00') {
       newErrors.amount = 'Por favor, insira um valor válido';
@@ -76,6 +123,21 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
 
     if (!description.trim()) {
       newErrors.description = 'A descrição é obrigatória';
+    }
+
+    // Validar boleto se habilitado
+    if (paymentMethods.boleto) {
+      if (!boletoBarcode.trim()) {
+        newErrors.boleto = 'Código de barras do boleto é obrigatório';
+      }
+      if (!boletoCedente.trim()) {
+        newErrors.boleto = 'Cedente do boleto é obrigatório';
+      }
+    }
+
+    // Validar endereço de fatura
+    if (!billingStreet.trim() || !billingNumber.trim() || !billingCity.trim() || !billingState.trim() || !billingZipcode.trim()) {
+      newErrors.billingAddress = 'Todos os campos de endereço de fatura são obrigatórios';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -87,7 +149,26 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
     const link = `https://parceleaqui.com/pay/${Math.random().toString(36).substr(2, 9)}`;
     setGeneratedLink(link);
     setShowOverlay(true);
-    onGenerateLink({ amount, description, installments });
+    
+    onGenerateLink({ 
+      amount, 
+      description, 
+      installments,
+      boleto: paymentMethods.boleto ? {
+        barcode: boletoBarcode,
+        cedente: boletoCedente,
+        valor: amount
+      } : undefined,
+      billingAddress: {
+        street: billingStreet,
+        number: billingNumber,
+        complement: billingComplement,
+        city: billingCity,
+        state: billingState,
+        zipcode: billingZipcode
+      },
+      paymentMethods: Object.keys(paymentMethods).filter(key => paymentMethods[key as keyof typeof paymentMethods])
+    });
   };
 
   const copyToClipboard = () => {
@@ -104,7 +185,7 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
       <Sidebar activeMenu="link" onNavigate={onNavigate} />
       {/* Main Content */}
       <main className="flex-1 md:p-12 p-4 pb-12 pt-6">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <div className="bg-white p-4 sm:p-8" style={{ borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-md)' }}>
             <div className="mb-6 sm:mb-8">
               <h2 className="text-[22px] sm:text-[28px]" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--fg)', marginBottom: 'var(--s-2)', letterSpacing: '-0.01em', lineHeight: '1.2' }}>
@@ -211,6 +292,268 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
                     {errors.description}
                   </p>
                 )}
+                <p style={{ marginTop: 'var(--s-2)', fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg-muted)' }}>
+                  💡 Dica: Use este campo para informar ao cliente o motivo do pagamento (ex: "Fatura de Serviços - Maio/2026", "Parcelamento de Débito").
+                </p>
+              </div>
+
+              {/* Métodos de Pagamento */}
+              <div>
+                <label className="block" style={{ fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '14px', color: '#333333', marginBottom: 'var(--s-3)' }}>
+                  Métodos de Pagamento Disponíveis
+                </label>
+                <div className="space-y-2">
+                  {[
+                    { key: 'credit', label: 'Cartão de Crédito' },
+                    { key: 'debit', label: 'Cartão de Débito' },
+                    { key: 'pix', label: 'PIX' },
+                    { key: 'boleto', label: 'Boleto' }
+                  ].map((method) => (
+                    <label key={method.key} className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={paymentMethods[method.key as keyof typeof paymentMethods]}
+                        onChange={(e) => {
+                          setPaymentMethods({
+                            ...paymentMethods,
+                            [method.key]: e.target.checked
+                          });
+                        }}
+                        style={{
+                          width: '18px',
+                          height: '18px',
+                          marginRight: 'var(--s-2)',
+                          cursor: 'pointer'
+                        }}
+                      />
+                      <span style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: '#333333' }}>
+                        {method.label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Dados do Boleto - Mostrar apenas se habilitado */}
+              {paymentMethods.boleto && (
+                <div style={{ backgroundColor: 'var(--bg-muted)', padding: 'var(--s-4)', borderRadius: 'var(--r-md)' }}>
+                  <h3 style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '14px', color: '#333333', marginBottom: 'var(--s-3)' }}>
+                    Dados do Boleto <span style={{ color: 'var(--error)' }}>*</span>
+                  </h3>
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <label className="block" style={{ fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '13px', color: '#333333', marginBottom: 'var(--s-2)' }}>
+                        Código de Barras
+                      </label>
+                      <input
+                        type="text"
+                        value={boletoBarcode}
+                        onChange={(e) => setBoletoBarcode(e.target.value)}
+                        placeholder="Ex: 12345.67890 12345.678901 12345.678901 1 12345678901234"
+                        className="w-full bg-white border focus:outline-none transition-all"
+                        style={{
+                          padding: 'var(--s-2) var(--s-3)',
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '13px',
+                          borderRadius: 'var(--r-md)',
+                          color: 'var(--fg)',
+                          borderColor: 'var(--border)',
+                          borderWidth: '1px'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = 'var(--bg-brand)';
+                          e.target.style.borderWidth = '1.5px';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = 'var(--border)';
+                          e.target.style.borderWidth = '1px';
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block" style={{ fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '13px', color: '#333333', marginBottom: 'var(--s-2)' }}>
+                        Cedente
+                      </label>
+                      <input
+                        type="text"
+                        value={boletoCedente}
+                        onChange={(e) => setBoletoCedente(e.target.value)}
+                        placeholder="Ex: EMPRESA LTDA"
+                        className="w-full bg-white border focus:outline-none transition-all"
+                        style={{
+                          padding: 'var(--s-2) var(--s-3)',
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '13px',
+                          borderRadius: 'var(--r-md)',
+                          color: 'var(--fg)',
+                          borderColor: 'var(--border)',
+                          borderWidth: '1px'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = 'var(--bg-brand)';
+                          e.target.style.borderWidth = '1.5px';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = 'var(--border)';
+                          e.target.style.borderWidth = '1px';
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {errors.boleto && (
+                    <p style={{ marginTop: 'var(--s-2)', color: 'var(--error)', fontFamily: 'var(--font-sans)', fontSize: '12px' }}>
+                      {errors.boleto}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Endereço de Fatura */}
+              <div style={{ backgroundColor: 'var(--bg-muted)', padding: 'var(--s-4)', borderRadius: 'var(--r-md)' }}>
+                <h3 style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '14px', color: '#333333', marginBottom: 'var(--s-3)' }}>
+                  Endereço de Fatura <span style={{ color: 'var(--error)' }}>*</span>
+                </h3>
+                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg-muted)', marginBottom: 'var(--s-3)' }}>
+                  Estes dados serão enviados ao cliente e usados para validação anti-fraude.
+                </p>
+                <div className="flex flex-col gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block" style={{ fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '13px', color: '#333333', marginBottom: 'var(--s-1)' }}>
+                        Rua
+                      </label>
+                      <input
+                        type="text"
+                        value={billingStreet}
+                        onChange={(e) => setBillingStreet(e.target.value)}
+                        placeholder="Ex: Rua das Flores"
+                        className="w-full bg-white border focus:outline-none transition-all"
+                        style={{
+                          padding: 'var(--s-2) var(--s-3)',
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '13px',
+                          borderRadius: 'var(--r-md)',
+                          color: 'var(--fg)',
+                          borderColor: errors.billingAddress ? 'var(--error)' : 'var(--border)',
+                          borderWidth: '1px'
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block" style={{ fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '13px', color: '#333333', marginBottom: 'var(--s-1)' }}>
+                        Número
+                      </label>
+                      <input
+                        type="text"
+                        value={billingNumber}
+                        onChange={(e) => setBillingNumber(e.target.value)}
+                        placeholder="Ex: 123"
+                        className="w-full bg-white border focus:outline-none transition-all"
+                        style={{
+                          padding: 'var(--s-2) var(--s-3)',
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '13px',
+                          borderRadius: 'var(--r-md)',
+                          color: 'var(--fg)',
+                          borderColor: errors.billingAddress ? 'var(--error)' : 'var(--border)',
+                          borderWidth: '1px'
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block" style={{ fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '13px', color: '#333333', marginBottom: 'var(--s-1)' }}>
+                        Complemento (opcional)
+                      </label>
+                      <input
+                        type="text"
+                        value={billingComplement}
+                        onChange={(e) => setBillingComplement(e.target.value)}
+                        placeholder="Ex: Apto 42"
+                        className="w-full bg-white border focus:outline-none transition-all"
+                        style={{
+                          padding: 'var(--s-2) var(--s-3)',
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '13px',
+                          borderRadius: 'var(--r-md)',
+                          color: 'var(--fg)',
+                          borderColor: 'var(--border)',
+                          borderWidth: '1px'
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block" style={{ fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '13px', color: '#333333', marginBottom: 'var(--s-1)' }}>
+                        Cidade
+                      </label>
+                      <input
+                        type="text"
+                        value={billingCity}
+                        onChange={(e) => setBillingCity(e.target.value)}
+                        placeholder="Ex: São Paulo"
+                        className="w-full bg-white border focus:outline-none transition-all"
+                        style={{
+                          padding: 'var(--s-2) var(--s-3)',
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '13px',
+                          borderRadius: 'var(--r-md)',
+                          color: 'var(--fg)',
+                          borderColor: errors.billingAddress ? 'var(--error)' : 'var(--border)',
+                          borderWidth: '1px'
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block" style={{ fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '13px', color: '#333333', marginBottom: 'var(--s-1)' }}>
+                        Estado
+                      </label>
+                      <input
+                        type="text"
+                        value={billingState}
+                        onChange={(e) => setBillingState(e.target.value.toUpperCase())}
+                        placeholder="Ex: SP"
+                        maxLength={2}
+                        className="w-full bg-white border focus:outline-none transition-all"
+                        style={{
+                          padding: 'var(--s-2) var(--s-3)',
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '13px',
+                          borderRadius: 'var(--r-md)',
+                          color: 'var(--fg)',
+                          borderColor: errors.billingAddress ? 'var(--error)' : 'var(--border)',
+                          borderWidth: '1px'
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block" style={{ fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '13px', color: '#333333', marginBottom: 'var(--s-1)' }}>
+                        CEP
+                      </label>
+                      <input
+                        type="text"
+                        value={billingZipcode}
+                        onChange={(e) => setBillingZipcode(e.target.value)}
+                        placeholder="Ex: 01234-567"
+                        className="w-full bg-white border focus:outline-none transition-all"
+                        style={{
+                          padding: 'var(--s-2) var(--s-3)',
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '13px',
+                          borderRadius: 'var(--r-md)',
+                          color: 'var(--fg)',
+                          borderColor: errors.billingAddress ? 'var(--error)' : 'var(--border)',
+                          borderWidth: '1px'
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                {errors.billingAddress && (
+                  <p style={{ marginTop: 'var(--s-2)', color: 'var(--error)', fontFamily: 'var(--font-sans)', fontSize: '12px' }}>
+                    {errors.billingAddress}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -248,8 +591,17 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
                     { value: '3', label: '3x sem juros', rate: '0%' },
                     { value: '6', label: '6x com juros', rate: '2,99%' },
                     { value: '12', label: '12x com juros', rate: '4,64%' },
-                    { value: '18', label: '18x com juros', rate: '5,82%' },
-                    { value: '24', label: '24x com juros', rate: '6,49%' },
+                    { value: '18', label: '18x com juros', rate: '4,88%' },
+                    { value: '24', label: '24x com juros', rate: '5,32%' },
+                    { value: '30', label: '30x com juros', rate: '5,65%' },
+                    { value: '36', label: '36x com juros', rate: '5,60%' },
+                    { value: '42', label: '42x com juros', rate: '5,68%' },
+                    { value: '48', label: '48x com juros', rate: '5,64%' },
+                    { value: '54', label: '54x com juros', rate: '5,55%' },
+                    { value: '60', label: '60x com juros', rate: '5,72%' },
+                    { value: '66', label: '66x com juros', rate: '5,91%' },
+                    { value: '72', label: '72x com juros', rate: '6,67%' },
+                    { value: '78', label: '78x com juros', rate: '6,50%' },
                   ].map((option) => {
                     const numAmount = parseFloat(amount.replace(',', '.')) || 0;
                     // Se repassar juros ao cliente, mostrar valor COM juros. Senão, mostrar valor base
@@ -334,7 +686,7 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
               </button>
 
               <p style={{ marginTop: 'var(--s-3)', fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--fg-muted)', textAlign: 'center' }}>
-                Link válido por 24 horas. O cliente poderá parcelar em até 12x.
+                Link válido por 24 horas. O cliente poderá parcelar em até 78x.
               </p>
             </div>
 
@@ -407,14 +759,6 @@ export function MerchantDashboard({ onGenerateLink, onNavigate }: MerchantDashbo
                   </button>
                 </div>
               </div>
-              <button
-                onClick={() => setShowOverlay(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-              </button>
             </div>
           </div>
         </div>

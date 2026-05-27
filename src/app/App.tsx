@@ -26,7 +26,7 @@ export default function App() {
     <div className="size-full">
       {view === 'home' && <DashboardHome onNavigate={handleNavigate} />}
       {view === 'merchant' && <MerchantDashboard onGenerateLink={handleGenerateLink} onNavigate={handleNavigate} />}
-      {view === 'customer' && <CustomerCheckout onNavigate={handleNavigate} />}
+      {view === 'customer' && <CustomerCheckout onNavigate={handleNavigate} paymentData={paymentData} />}
     </div>
   );
 }
