@@ -29,7 +29,8 @@ interface CustomerCheckoutProps {
 }
 
 export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutProps) {
-  const [cardType, setCardType] = useState('credit');
+  const availablePaymentMethods = paymentData?.paymentMethods || ['credit', 'debit'];
+  const [cardType, setCardType] = useState(availablePaymentMethods[0] || 'credit');
   const [cardNumber, setCardNumber] = useState('');
   const [cardName, setCardName] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
@@ -51,7 +52,6 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
   const description = paymentData?.description || 'Pagamento';
   const billingAddress = paymentData?.billingAddress;
   const boletoData = paymentData?.boleto;
-  const availablePaymentMethods = paymentData?.paymentMethods || ['credit', 'debit'];
 
   // Taxas de juros por quantidade de parcelas
   const interestRates: { [key: string]: number } = {
@@ -727,7 +727,7 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
               )}
 
               {cardType === 'pix' && (
-                <div className="space-y-4">
+                <div className="space-y-4" style={{ border: '3px solid red', padding: 'var(--s-4)', borderRadius: 'var(--r-md)' }}>
                   <div style={{ backgroundColor: 'var(--bg-muted)', padding: 'var(--s-4)', borderRadius: 'var(--r-md)', textAlign: 'center' }}>
                     <h3 style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '14px', color: '#333333', marginBottom: 'var(--s-3)' }}>
                       📱 Escaneie o QR Code
