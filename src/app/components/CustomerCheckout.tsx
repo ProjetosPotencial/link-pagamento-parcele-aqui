@@ -276,7 +276,13 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
                   <div className="relative">
                     <select
                       value={cardType}
-                      onChange={(e) => setCardType(e.target.value)}
+                      onChange={(e) => {
+                        setCardType(e.target.value);
+                        // Se PIX for selecionado, forçar 1 parcela
+                        if (e.target.value === 'pix') {
+                          setInstallments('1');
+                        }
+                      }}
                       className="w-full bg-white border focus:outline-none appearance-none cursor-pointer"
                       style={{
                         padding: 'var(--s-3) var(--s-4)',
@@ -525,6 +531,19 @@ export function CustomerCheckout({ onNavigate, paymentData }: CustomerCheckoutPr
               )}
 
               {/* Parcelas - Ocultar para PIX */}
+              {cardType === 'pix' && (
+              <div>
+                <label className="block" style={{ fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '14px', color: '#333333', marginBottom: 'var(--s-2)' }}>
+                  Forma de Pagamento
+                </label>
+                <div style={{ backgroundColor: 'var(--bg-muted)', padding: 'var(--s-3) var(--s-4)', borderRadius: 'var(--r-lg)', fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'var(--fg)', fontWeight: 500 }}>
+                  💳 Pagamento à Vista
+                </div>
+                <p style={{ marginTop: 'var(--s-1)', fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--fg-muted)' }}>
+                  Pagamento imediato via PIX
+                </p>
+              </div>
+              )}
               {cardType !== 'pix' && (
               <div>
                 <label className="block" style={{ fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: '14px', color: '#333333', marginBottom: 'var(--s-2)' }}>
