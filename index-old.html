@@ -312,23 +312,6 @@
   .band{display:inline-flex;align-items:center}
   .band svg{display:block;height:20px;width:auto}
   .pwl{text-transform:lowercase !important}
-
-  .ck-guia-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
-  .ck-toggle{background:none;border:none;cursor:pointer;color:var(--fg-muted);padding:2px;display:flex;align-items:center}
-  .ck-toggle svg{transition:transform 150ms var(--ease)}
-  .ck-toggle.collapsed svg{transform:rotate(-90deg)}
-  .secure-green{text-align:center;color:var(--g-600);font-size:12px;font-weight:600;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:7px}
-  .secure-green svg{width:14px;height:14px}
-  .ck-contact{text-align:center;font-size:11.5px;color:var(--fg-subtle);margin-top:22px;padding-top:16px;border-top:1px solid var(--border)}
-
-  .cupom{margin-top:18px;padding-top:16px;border-top:1px dashed var(--border)}
-  .cupom-row{display:flex;gap:8px}
-  .cupom-row input{flex:1;text-transform:uppercase}
-  .cupom-btn{background:var(--n-900);color:#fff;padding:11px 18px;white-space:nowrap;font-weight:600}
-  .cupom-btn:hover{background:var(--n-800)}
-  .cupom-msg{font-size:12px;margin-top:7px;min-height:14px}
-  .cupom-msg.ok{color:var(--g-600);font-weight:600}
-  .cupom-msg.err{color:var(--red-500);font-weight:600}
 </style>
 </head>
 <body>
@@ -530,7 +513,7 @@
 
         <hr class="ck-hr">
 
-        <div class="ck-guia-head"><div class="ck-guia-t" id="ck-guia-t">Boletos (3 documentos)</div><button class="ck-toggle" onclick="toggleItens(this)" aria-label="Ver detalhes"><svg class="licon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button></div>
+        <div class="ck-guia-t" id="ck-guia-t">Boletos (3 documentos)</div>
         <div class="ck-guia-v" id="ck-guia-v">R$ 18.000,00</div>
 
         <div class="ck-itens" id="ck-itens"></div>
@@ -539,17 +522,8 @@
         <div class="ck-res">
           <div class="lin"><span>Valor dos boletos</span><span id="ck-valboletos">R$ 18.000,00</span></div>
           <div class="lin"><span>Taxa de serviço</span><span class="vermelho" id="ck-taxa">R$ 1.320,00</span></div>
-          <div class="lin" id="ck-desconto-row" style="display:none"><span>Desconto<span id="ck-cupom-tag"></span></span><span id="ck-desconto" style="color:var(--g-600)">- R$ 0,00</span></div>
           <div class="lin total"><span>Valor total a pagar</span><span id="ck-parcela">12x R$ 1.610,00</span></div>
           <div class="lin sub"><span></span><span id="ck-totalpagar">R$ 19.320,00</span></div>
-        </div>
-
-        <div class="cupom">
-          <div class="cupom-row">
-            <input id="cupom-input" placeholder="Cupom de desconto" oninput="cupomReset()">
-            <button class="btn cupom-btn" onclick="aplicarCupom()">Aplicar</button>
-          </div>
-          <p class="cupom-msg" id="cupom-msg"></p>
         </div>
 
         <div class="powered">
@@ -645,12 +619,14 @@
           </div>
         </div>
 
+        <div class="trust">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          Pagamento processado com segurança · criptografia ponta a ponta
+        </div>
         <p class="termos">Ao clicar no botão abaixo, eu declaro que li e estou de acordo com os <a href="#">Termos de Serviço</a> e a <a href="#">Política de Privacidade</a> da Potencial Tecnologia.</p>
         <button class="btn btn-pay" id="btn-pay" onclick="alert('Protótipo — pagamento simulado.')">Pagar R$ 19.320,00</button>
-        <div class="secure-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Ambiente de pagamento 100% seguro</div>
       </div>
     </div>
-  <div class="ck-contact">Telefone: +55 (11) 3159-1380 &middot; E-mail: suporte@potencialtecnologia.com.br</div>
 </div>
         </div>
       </main>
@@ -745,10 +721,8 @@
   function ckBoletos(){return (typeof boletos!=='undefined')? boletos : [];}
   function ckTotal(){return ckBoletos().reduce(function(s,b){return s+(b.val||0)},0);}
   function totalComJuros(base,n){var r=interestRates[n]||0;if(r===0)return base;return base*Math.pow(1+r/100,n);}
-  var desconto=0,cupomCode='';
-  function ckTotalLiq(){return Math.max(0, ckTotal()-(desconto||0));}
   function renderCheckout(){
-    var bs=ckBoletos(), full=ckTotal(), base=ckTotalLiq();
+    var bs=ckBoletos(), total=ckTotal();
     var itens=document.getElementById('ck-itens'); var html='';
     bs.forEach(function(b){
       var v=b.venc?(' · vence '+b.venc.split('-').reverse().join('/')):'';
@@ -756,30 +730,27 @@
     });
     itens.innerHTML=html;
     document.getElementById('ck-guia-t').textContent='Boletos ('+bs.length+(bs.length===1?' documento':' documentos')+')';
-    document.getElementById('ck-guia-v').textContent=brl(full);
-    document.getElementById('ck-valboletos').textContent=brl(full);
-    var dr=document.getElementById('ck-desconto-row');
-    if(desconto>0){dr.style.display='';document.getElementById('ck-desconto').textContent='- '+brl(desconto);document.getElementById('ck-cupom-tag').textContent=cupomCode?(' · '+cupomCode):'';}
-    else{dr.style.display='none';}
-    document.getElementById('ck-deb-total').textContent=brl(base);
-    document.getElementById('ck-pix-total').textContent=brl(base);
+    document.getElementById('ck-guia-v').textContent=brl(total);
+    document.getElementById('ck-valboletos').textContent=brl(total);
+    document.getElementById('ck-deb-total').textContent=brl(total);
+    document.getElementById('ck-pix-total').textContent=brl(total);
     var sel=document.getElementById('parc-select');
-    if(base<=0){
+    if(total<=0){
       sel.innerHTML='<option value="0">— adicione boletos para calcular —</option>';
     } else {
       var opts='';
       for(var n=1;n<=12;n++){
-        var tot=totalComJuros(base,n);
+        var tot=totalComJuros(total,n);
         var rate=(interestRates[n]||0).toFixed(2).replace('.',',');
-        opts+='<option value="'+n+'"'+(n===12?' selected':'')+'>'+n+'x – Valor total: '+brl(tot)+' – Taxa: '+rate+'%</option>';
+        opts+='<option value="'+n+'"'+(n===12?' selected':'')+'>'+n+'x \u2013 Valor total: '+brl(tot)+' \u2013 Taxa: '+rate+'%</option>';
       }
       sel.innerHTML=opts;
     }
     changeParcela();
   }
   function changeParcela(){
-    var base=ckTotalLiq();
-    if(base<=0){
+    var total=ckTotal();
+    if(total<=0){
       document.getElementById('ck-taxa').textContent=brl(0);
       document.getElementById('ck-parcela').textContent='—';
       document.getElementById('ck-totalpagar').textContent=brl(0);
@@ -787,44 +758,21 @@
     }
     var selEl=document.getElementById('parc-select');
     var n=parseInt((selEl&&selEl.value)||'12',10);if(!n)n=12;
-    var tot=totalComJuros(base,n), parc=tot/n, taxa=tot-base;
+    var tot=totalComJuros(total,n), parc=tot/n, taxa=tot-total;
     document.getElementById('ck-taxa').textContent=brl(taxa);
     document.getElementById('ck-parcela').textContent=n+'x '+brl(parc);
     document.getElementById('ck-totalpagar').textContent=brl(tot);
     updatePayBtn();
   }
   function updatePayBtn(){
-    var base=ckTotalLiq(); var pay=document.getElementById('btn-pay');
-    if(base<=0){pay.textContent='Pagar '+brl(0);return;}
+    var total=ckTotal(); var pay=document.getElementById('btn-pay');
+    if(total<=0){pay.textContent='Pagar '+brl(0);return;}
     if(ckMethod==='credito'){
       var selEl=document.getElementById('parc-select');
       var n=parseInt((selEl&&selEl.value)||'12',10);if(!n)n=12;
-      pay.textContent='Pagar '+brl(totalComJuros(base,n));
-    } else { pay.textContent='Pagar '+brl(base); }
+      pay.textContent='Pagar '+brl(totalComJuros(total,n));
+    } else { pay.textContent='Pagar '+brl(total); }
   }
-  var CUPONS={'PARCELE10':{t:'pct',v:10,d:'10% de desconto'},'CAPITALE15':{t:'pct',v:15,d:'15% de desconto'},'BEMVINDO50':{t:'fixo',v:50,d:'R$ 50 de desconto'}};
-  function cupomReset(){var m=document.getElementById('cupom-msg');if(m){m.textContent='';m.className='cupom-msg';}}
-  function aplicarCupom(){
-    var inp=document.getElementById('cupom-input');
-    var code=(inp.value||'').trim().toUpperCase();
-    var msg=document.getElementById('cupom-msg');
-    if(ckTotal()<=0){alert('Adicione boletos antes de aplicar um cupom.');return;}
-    if(!code){msg.className='cupom-msg err';msg.textContent='Digite um cupom.';return;}
-    var c=CUPONS[code];
-    if(!c){
-      desconto=0;cupomCode='';
-      msg.className='cupom-msg err';msg.textContent='Cupom inválido ou expirado.';
-      alert('Cupom inválido ou expirado. Verifique o código e tente novamente.');
-      renderCheckout();return;
-    }
-    var total=ckTotal();
-    desconto = c.t==='pct' ? total*c.v/100 : c.v;
-    if(desconto>total) desconto=total;
-    cupomCode=code;
-    msg.className='cupom-msg ok';msg.textContent='Cupom '+code+' aplicado — '+c.d+'.';
-    renderCheckout();
-  }
-  function toggleItens(btn){var it=document.getElementById('ck-itens');var hidden=(it.style.display==='none');it.style.display=hidden?'':'none';btn.classList.toggle('collapsed',!hidden);}
   function selPgto(el){
     if(el.classList.contains('disabled'))return;
     document.querySelectorAll('.pgto-op').forEach(function(o){o.classList.remove('sel')});
